@@ -1,4 +1,4 @@
-package com.example.melanomatnm
+package com.example.melanomatnm.view
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
