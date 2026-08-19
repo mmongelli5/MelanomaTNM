@@ -7,7 +7,8 @@ import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * classe che gestisce lo stato dell'interfaccia utente
- *
+ * @property _uiState rappresenta lo stato dell'interfaccia utente modificabile
+ * @property uiState rappresenta lo stato dell'interfaccia utente di sola lettura
  */
 class MelanomaViewModel: ViewModel() {
 
@@ -18,9 +19,47 @@ class MelanomaViewModel: ViewModel() {
     val  uiState: StateFlow<MelanomaUiState> = _uiState.asStateFlow()
 
     //funzioni che aggiornano lo stato
+
+    /**
+     * Aggiorna il parametro relativo allo spessore di Breslow del melanoma tramite .copy()
+     * @param nuovoSpessore rappresenta il nuovo valore del parametro
+     */
     fun aggiornaBreslow(nuovoSpessore: Double) {
         val datoAttuale= _uiState.value.melanomaAnalizzato
         val datoAggiornato = datoAttuale.copy(spessoreBreslow = nuovoSpessore)
         _uiState.value = _uiState.value.copy(melanomaAnalizzato = datoAggiornato)
     }
+
+    /**
+     * Aggiorna il parametro relativo alla presenza o meno di ulcerazione del melanoma tramite .copy()
+     * @param statoUlcerazione rappresenta il nuovo valore del parametro
+     */
+    fun aggiornaUlcerazione(statoUlcerazione: Boolean) {
+        val datoAttuale = _uiState.value.melanomaAnalizzato
+        val datoAggiornato = datoAttuale.copy(ulcerazione = statoUlcerazione)
+        _uiState.value = _uiState.value.copy(melanomaAnalizzato = datoAggiornato)
+    }
+
+    /**
+     * Aggiorna il parametro relativo al numero di linfonodi regionali del melanoma tramite .copy()
+     * @param nuovoNumeroLinfonodi rappresenta il nuovo valore del parametro
+     */
+
+    fun aggiornaLinfonodi(nuovoNumeroLinfonodi: Int) {
+        val datoAttuale = _uiState.value.melanomaAnalizzato
+        val datoAggiornato = datoAttuale.copy(numeroLinfonodi = nuovoNumeroLinfonodi)
+        _uiState.value = _uiState.value.copy(melanomaAnalizzato = datoAggiornato)
+    }
+
+    /**
+     * Aggiorna il parametro relatico alla presenza o meno di metastasi a distanza del melanoma tramite .copy()
+     */
+
+    fun aggiornaMetastasi(statoMetastasi: Boolean) {
+        val datoAttuale = _uiState.value.melanomaAnalizzato
+        val datoAggiornato = datoAttuale.copy(metastasi = statoMetastasi)
+        _uiState.value = _uiState.value.copy(melanomaAnalizzato = datoAggiornato)
+
+    }
+
 }
