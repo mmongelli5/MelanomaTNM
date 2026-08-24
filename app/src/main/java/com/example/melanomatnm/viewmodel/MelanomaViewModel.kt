@@ -1,6 +1,7 @@
 package com.example.melanomatnm.viewmodel
 
 import androidx.lifecycle.ViewModel
+import com.example.melanomatnm.model.CalcolatoreTNM
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,7 +16,7 @@ class MelanomaViewModel: ViewModel() {
     //stato privato, modificabile solo da questa classe
     private val _uiState = MutableStateFlow(MelanomaUiState())
 
-    //stato pubblico di sola lettura usato dall'interfaccia grafica
+    //stato pubblico di sola lettura usato dall'interfaccia grafica (
     val  uiState: StateFlow<MelanomaUiState> = _uiState.asStateFlow()
 
     //funzioni che aggiornano lo stato
@@ -53,6 +54,7 @@ class MelanomaViewModel: ViewModel() {
 
     /**
      * Aggiorna il parametro relatico alla presenza o meno di metastasi a distanza del melanoma tramite .copy()
+     * @param statoMetastasi rappresenta il nuovo valore del parametro
      */
 
     fun aggiornaMetastasi(statoMetastasi: Boolean) {
@@ -60,6 +62,25 @@ class MelanomaViewModel: ViewModel() {
         val datoAggiornato = datoAttuale.copy(metastasi = statoMetastasi)
         _uiState.value = _uiState.value.copy(melanomaAnalizzato = datoAggiornato)
 
+    }
+
+    /**
+     * Calcola lo stadio del melanoma secondo classificazioneTNM
+     */
+    fun calcolaStadioFinale() {
+        //Prendo i dati attuali dal UiState
+        val datiPaziente = _uiState.value.melanomaAnalizzato
+
+        //Chiamo il Model passandogli i dati
+        val risultatoCalcolato = CalcolatoreTNM().calcolaTNM(
+            breslow = datiPaziente.spessoreBreslow,
+            ulcerazione = datiPaziente.ulcerazione,
+            numLinfonodi = datiPaziente.numeroLinfonodi,
+            metastasi = datiPaziente.metastasi
+        )
+
+        //Preparo il risultato per la View
+        _uiState.value = _uiState.value.copy(risultatoTNM = risultatoCalcolato)
     }
 
 }

@@ -12,5 +12,12 @@ data class DatiMelanoma(
     val ulcerazione: Boolean,
     val numeroLinfonodi: Int,
     val metastasi: Boolean,
-)
+) {
+    init {
+        require(spessoreBreslow >= 0.0) { "Lo spessore di Breslow deve essere un valore positivo!" }
+        require(numeroLinfonodi >= 0) { "Il numero di linfonodi deve essere un valore positivo!" }
+    }
+}
+
+
 
