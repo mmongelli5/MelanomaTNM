@@ -1,0 +1,125 @@
+package com.example.melanomatnm.view
+
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.runtime.Composable
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.melanomatnm.viewmodel.MelanomaViewModel
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextField
+import androidx.compose.ui.unit.dp
+import androidx.compose.material3.Text
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.Alignment
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+
+@Composable
+fun MelanomaAppScreen(viewModel: MelanomaViewModel, innerPadding: PaddingValues) {
+    //Ascolto del viewmodel/logica di stato
+    val stato by viewModel.uiState.collectAsStateWithLifecycle()
+
+    var testoInserito by remember { mutableStateOf(stato.melanomaAnalizzato.spessoreBreslow.toString()) }
+
+    //Calcolo dell'errore (numero inserito non valido)
+    val isError =
+        testoInserito.isNotEmpty() && testoInserito.replace(',', '.').toDoubleOrNull() == null
+
+    //layout UI
+    Column(
+        modifier = Modifier
+            .fillMaxSize() // Occupa tutto lo schermo
+            .padding(innerPadding) // Rispetta i margini di sistema dello Scaffold
+            .padding(16.dp), // Aggiunge 16dp di margine extra ai lati
+        horizontalAlignment = Alignment.CenterHorizontally //allinea i componenti orizzontalmente
+    ) {
+
+        //TITOLO
+        Text(text = "MelanomaTNM", style = MaterialTheme.typography.headlineLarge) //Titolo
+
+        Spacer(modifier = Modifier.height(32.dp)) //spazio vuoto per distanziare dal titolo
+
+        //SOTTOTITOLO 1(SPESSORE DI BRESLOW)
+        Text(text = "Spessore di Breslow", style = MaterialTheme.typography.headlineMedium)
+        //Campo di testo per spessore di Breslow
+        OutlinedTextField(
+            //converto il double in stringa per farlo accettare come value della TextField
+            value = testoInserito,
+
+            onValueChange = { nuovoValore ->
+                //aggiorna il buffer locale
+                testoInserito = nuovoValore
+
+                //sostituisco la virgola col punto per la compatibilità
+                val testoConvertito = nuovoValore.replace(',', '.')
+
+                val valoreConvertito = testoConvertito.toDoubleOrNull() ?: 0.0
+
+                viewModel.aggiornaBreslow(valoreConvertito)
+            },
+
+            label = { Text("inserisci lo spessore (mm)") },
+
+            isError = isError, // Se true, il bordo e la label diventano rossi
+
+            supportingText = { // Aggiunge il messaggio sotto il campo
+                if (isError) {
+                    Text(
+                        text = "Inserisci un numero valido (es. 1.5)",
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
+
+            //forza l'apertura del tastierino numerico decimale
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal),
+
+            //impedisce di inserire più di una riga
+            singleLine = true,
+
+            modifier = Modifier.padding(bottom = 16.dp),
+        )
+
+        //SOTTOTITOLO 2 (ULCERAZIONE)
+        Text(text = "Ulcerazione", style = MaterialTheme.typography.headlineMedium)
+
+        val opzioni = listOf("Assente", "Presente")
+
+        val indiceSelezionato = if (stato.melanomaAnalizzato.ulcerazione) 1 else 0
+
+        SingleChoiceSegmentedButtonRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+        ) {
+            //crea entrambe le metà del bottone con un ciclo
+            opzioni.forEachIndexed { index, label ->
+                SegmentedButton(
+                    //arrotonda automaticamente i bordi del bottone per ogni opzione
+                    shape = SegmentedButtonDefaults.itemShape(index = index, count = opzioni.size),
+                    onClick = {
+                        // Aggiorna il viewmodel: index 1 è true (Presente), 0 è false (Assente)
+                        viewModel.aggiornaUlcerazione(index == 1)
+                    },
+                    selected = index == indiceSelezionato,
+                    label = { Text(label) }
+                )
+            }
+        }
+
+
+    }
+}
