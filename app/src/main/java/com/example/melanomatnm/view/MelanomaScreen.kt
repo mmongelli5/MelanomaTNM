@@ -1,5 +1,6 @@
 package com.example.melanomatnm.view
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -29,6 +30,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.Alignment
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Button
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MedicalInformation
+
 
 @Composable
 fun MelanomaAppScreen(viewModel: MelanomaViewModel, innerPadding: PaddingValues) {
@@ -65,6 +73,7 @@ fun MelanomaAppScreen(viewModel: MelanomaViewModel, innerPadding: PaddingValues)
     //layout UI
     Column(
         modifier = Modifier
+            .background(MaterialTheme.colorScheme.background)
             .fillMaxSize() // Occupa tutto lo schermo
             .padding(innerPadding) // Rispetta i margini di sistema dello Scaffold
             .padding(16.dp) // Aggiunge 16dp di margine extra ai lati
@@ -72,9 +81,27 @@ fun MelanomaAppScreen(viewModel: MelanomaViewModel, innerPadding: PaddingValues)
         horizontalAlignment = Alignment.CenterHorizontally //allinea i componenti orizzontalmente
     ) {
 
-        //TITOLO
-        Text(text = "MelanomaTNM", style = MaterialTheme.typography.headlineLarge) //Titolo
 
+        // TITOLO CON ICONA ACCANTO
+        androidx.compose.foundation.layout.Row(
+            verticalAlignment = Alignment.CenterVertically, // Allinea verticalmente icona e testo al centro tra loro
+            horizontalArrangement = Arrangement.Center, // Centra il gruppo orizzontalmente
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            androidx.compose.material3.Icon(
+                imageVector = Icons.Default.MedicalInformation,
+                contentDescription = null,
+                modifier = Modifier.size(40.dp).padding(end = 8.dp), // Spazio tra icona e testo
+                tint = MaterialTheme.colorScheme.primary // Colore dell'icona
+            )
+
+            Text(
+                text = "MelanomaTNM",
+                style = MaterialTheme.typography.displaySmall, // Carattere grande
+                fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
         Spacer(modifier = Modifier.height(32.dp)) //spazio vuoto per distanziare dal titolo
 
         //SOTTOTITOLO 1 (SPESSORE DI BRESLOW)
@@ -199,6 +226,7 @@ fun MelanomaAppScreen(viewModel: MelanomaViewModel, innerPadding: PaddingValues)
         )
 
         Spacer(modifier = Modifier.height(32.dp))
+
         //SOTTOTITOLO 4 (METASTASI)
         Text(
             text = "Metastasi",
@@ -230,5 +258,41 @@ fun MelanomaAppScreen(viewModel: MelanomaViewModel, innerPadding: PaddingValues)
                 )
             }
         }
+
+        Spacer(modifier = Modifier.height(48.dp))
+
+        // BOTTONE DI CALCOLO
+        androidx.compose.material3.Button(
+            onClick = { viewModel.calcolaStadioFinale() },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = moduloValido // Si attiva solo se i dati sono corretti
+        ) {
+            Text(text = "Calcola Stadio", style = MaterialTheme.typography.titleLarge)
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // AREA RISULTATO
+        if (stato.risultatoTNM.isNotEmpty()) {
+            androidx.compose.material3.Card(
+                colors = androidx.compose.material3.CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                ),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = "Risultato Classificazione:", style = MaterialTheme.typography.labelLarge)
+                    Text(
+                        text = stato.risultatoTNM,
+                        style = MaterialTheme.typography.headlineLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        }
+
     }
 }
