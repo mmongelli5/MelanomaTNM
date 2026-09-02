@@ -65,7 +65,7 @@ class MelanomaViewModel: ViewModel() {
     }
 
     /**
-     * Calcola lo stadio del melanoma secondo classificazioneTNM e le raccomandazioni mediche indicate (ispirandosi a NCCN ed ESMO)
+     * Calcola stadio e profilo TNM del melanoma secondo classificazioneTNM, nonché le raccomandazioni mediche indicate (ispirandosi a NCCN ed ESMO)
      */
     fun calcolaStadioFinale() {
         val calcolatore = CalcolatoreTNM()
@@ -80,11 +80,20 @@ class MelanomaViewModel: ViewModel() {
             metastasi = datiPaziente.metastasi
         )
 
+        val profiloCalcolato = calcolatore.calcolaProfiloTNM(
+            breslow = datiPaziente.spessoreBreslow,
+            ulcerazione = datiPaziente.ulcerazione,
+            numLinfonodi = datiPaziente.numeroLinfonodi,
+            metastasi = datiPaziente.metastasi
+        )
+
         val raccomandazioniOttenute = calcolatore.ottieniRaccomandazione(risultatoCalcolato)
 
 
         //Preparo il risultato per la View
-        _uiState.value = _uiState.value.copy(risultatoTNM = risultatoCalcolato,
+        _uiState.value = _uiState.value.copy(
+            risultatoTNM = risultatoCalcolato,
+            profiloTNM = profiloCalcolato,
             raccomandazioni = raccomandazioniOttenute)
     }
 

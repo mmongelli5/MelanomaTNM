@@ -12,22 +12,23 @@ class CalcolatoreTNM {
      */
     fun calcolaT(breslow: Double, ulcerazione: Boolean): String {
         return when {
-            //Tis
-            breslow == 0.0 -> "Tis" // Melanoma in situ (non ha mai ulcerazione)
-            //T1
+            breslow < 0.0 -> "Tx"
+            breslow == 0.0 -> "Tis"
+
+            // T1a: < 0.8 mm senza ulcerazione
             breslow < 0.8 && !ulcerazione -> "T1a"
-            (breslow < 0.8 && ulcerazione) || (breslow >= 0.8 && breslow <= 1.0) -> "T1b"
-            //T2
-            breslow > 1.0 && breslow <= 2.0 && !ulcerazione -> "T2a"
-            breslow > 1.0 && breslow <= 2.0 && ulcerazione -> "T2b"
-            //T3
-            breslow > 2.0 && breslow <= 4.0 && !ulcerazione -> "T3a"
-            breslow > 2.0 && breslow <= 4.0 && ulcerazione -> "T3b"
-            //T4
-            breslow > 4.0 && !ulcerazione -> "T4a"
-            breslow > 4.0 && ulcerazione -> "T4b"
-            //input non valido: spessore di breslow non validabile
-            else -> "Tx"
+
+            // T1b: < 0.8 mm con ulcerazione oppure 0.8-1.0 mm
+            breslow <= 1.0 -> "T1b"
+
+            // T2a/b: > 1.0 mm fino a 2.0 mm
+            breslow <= 2.0 -> if (ulcerazione) "T2b" else "T2a"
+
+            // T3a/b: > 2.0 mm fino a 4.0 mm
+            breslow <= 4.0 -> if (ulcerazione) "T3b" else "T3a"
+
+            // T4a/b: > 4.0 mm
+            else -> if (ulcerazione) "T4b" else "T4a"
         }
     }
 
@@ -55,7 +56,7 @@ class CalcolatoreTNM {
     }
 
     /**
-     * Calcola il stadio TNM del melanoma
+     * Calcola lo stadio TNM del melanoma
      * @param breslow: Spessore di Breslow del melanoma
      * @param ulcerazione: Indica se è presente o meno ulcerazione del melanoma
      * @param numLinfonodi: Numero di linfonodi regionali colpiti
@@ -73,12 +74,12 @@ class CalcolatoreTNM {
 
         val profiloTNM = "$t$n$m"
 
-        //gestione casi non valutabili
+        //gestione casi non valutabili e in situ
         if (t == "Tx" || n == "Nx") return "$profiloTNM: caso non valutabile"
 
         return when {
             //caso 0: melanoma in situ
-            t == "Tis" && n == "N0" && m == "M0" -> "Stadio 0"
+            t == "Tis" -> "Stadio 0"
 
             //caso 1: metastasi sovrasta il resto
             m == "M1" -> "Stadio IV"
@@ -101,6 +102,21 @@ class CalcolatoreTNM {
         }
 
 
+    }
+
+    /**
+     * Restituisce solo la sigla TNM (inserito nella card insieme allo stadio nella view)
+     */
+    fun calcolaProfiloTNM(
+        breslow: Double,
+        ulcerazione: Boolean,
+        numLinfonodi: Int,
+        metastasi: Boolean
+    ): String {
+        val t = calcolaT(breslow, ulcerazione)
+        val n = calcolaN(numLinfonodi)
+        val m = calcolaM(metastasi)
+        return "$t$n$m"
     }
 
     fun ottieniRaccomandazione(stadio: String): String {

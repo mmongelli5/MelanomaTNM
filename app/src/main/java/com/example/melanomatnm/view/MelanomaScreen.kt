@@ -73,15 +73,32 @@ fun MelanomaAppScreen(viewModel: MelanomaViewModel, innerPadding: PaddingValues)
     val isErrorLinfonodi =
         testoLinfonodi.isNotEmpty() && (numeroLinfonodiValido == null || numeroLinfonodiValido < 0)
 
-    //LOGICA BOTTONE CALCOLA STADIO
-
-    val moduloValido = testoBreslow.isNotEmpty() && !isErrorBreslow &&
-            testoLinfonodi.isNotEmpty() && !isErrorLinfonodi
 
     //STATO PER PANNELLO DETTAGLI
     // (per controllare se il pannello in è aperto o chiuso)
     var showSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
+
+    //CONDIZIONI PER RENDERE ATITVI I CAMPI
+        //Lo spessore è valido se non è vuoto e non ha errori
+    val breslowValido = testoBreslow.isNotEmpty() && !isErrorBreslow
+
+        //È "In Situ" (Tis) se lo spessore inserito è esattamente 0.0
+    val isTis = breslowValido && valoreBreslowCorretto == 0.0
+
+        //Gli altri campi si abilitano SOLO SE lo spessore è valido E NON è 0.0
+    val altriCampiAbilitati = breslowValido && !isTis
+
+    //LOGICA BOTTONE CALCOLA STADIO
+
+   // Il modulo è valido se:
+    //- Se è Tis (0.0 mm) -> basta lo spessore corretto
+    // - Se è > 0.0 mm -> servono anche i linfonodi corretti
+    val moduloValido = if (isTis) {
+        breslowValido
+    } else {
+        breslowValido && testoLinfonodi.isNotEmpty() && !isErrorLinfonodi
+    }
 
     //layout UI
     Column(
@@ -156,6 +173,12 @@ fun MelanomaAppScreen(viewModel: MelanomaViewModel, innerPadding: PaddingValues)
                         text = "Inserisci un numero valido (es. 1.5)",
                         color = MaterialTheme.colorScheme.error
                     )
+                } else if (isTis) {
+                    // Messaggio informativo per melanoma in Situ
+                    Text(
+                        text = "Per il melanoma in situ (0.0 mm) non sono necessari altri parametri.",
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
             },
 
@@ -197,7 +220,8 @@ fun MelanomaAppScreen(viewModel: MelanomaViewModel, innerPadding: PaddingValues)
                         viewModel.aggiornaUlcerazione(index == 1)
                     },
                     selected = index == indiceSelezionatoB,
-                    label = { Text(label) }
+                    label = { Text(label) },
+                    enabled = altriCampiAbilitati
                 )
             }
         }
@@ -237,7 +261,9 @@ fun MelanomaAppScreen(viewModel: MelanomaViewModel, innerPadding: PaddingValues)
 
             singleLine = true,
 
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+
+            enabled = altriCampiAbilitati
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -272,7 +298,8 @@ fun MelanomaAppScreen(viewModel: MelanomaViewModel, innerPadding: PaddingValues)
                         viewModel.aggiornaMetastasi(index == 1)
                     },
                     selected = index == indiceSelezionato,
-                    label = { Text(label) }
+                    label = { Text(label) },
+                    enabled = altriCampiAbilitati
                 )
             }
         }
@@ -312,6 +339,13 @@ fun MelanomaAppScreen(viewModel: MelanomaViewModel, innerPadding: PaddingValues)
                         text = stato.risultatoTNM,
                         style = MaterialTheme.typography.headlineLarge,
                         color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "Profilo: ${stato.profiloTNM}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
+                        modifier = Modifier.padding(top = 4.dp)
                     )
                 }
             }
