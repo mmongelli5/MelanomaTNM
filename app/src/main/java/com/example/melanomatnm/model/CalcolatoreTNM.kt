@@ -12,7 +12,7 @@ class CalcolatoreTNM {
      */
     fun calcolaT(breslow: Double, ulcerazione: Boolean): String {
         return when {
-            //TO
+            //Tis
             breslow == 0.0 -> "Tis" // Melanoma in situ (non ha mai ulcerazione)
             //T1
             breslow < 0.8 && !ulcerazione -> "T1a"
@@ -79,10 +79,11 @@ class CalcolatoreTNM {
         return when {
             //caso 0: melanoma in situ
             t == "Tis" && n == "N0" && m == "M0" -> "Stadio 0"
+
             //caso 1: metastasi sovrasta il resto
             m == "M1" -> "Stadio IV"
 
-            //caso 2: linfonofi in metastasi sovrastano lo spessore
+            // caso 2: presenza di interessamento linfonodale: sovrasta lo spessore
             n != "N0" -> "Stadio III"
 
             //caso 3: assenza di linfonodi e metastasi, si usa solo T
@@ -104,8 +105,14 @@ class CalcolatoreTNM {
 
     fun ottieniRaccomandazione(stadio: String): String {
         return when {
-            stadio == "Stadio 0" || stadio == "Stadio IA" ->
-                "• Ampia escissione chirurgica (margini 0.5-1 cm).\n" +
+            stadio == "Stadio 0" ->
+                "• Escissione chirurgica completa del melanoma in situ.\n" +
+                        "• SLNB non raccomandata.\n" +
+                        "• Follow-up dermatologico periodico e autoesame cutaneo."
+
+
+            stadio == "Stadio IA" ->
+                "• Ampia escissione chirurgica (margine generalmente 1 cm).\n" +
                         "• SLNB generalmente non raccomandata.\n" +
                         "• Follow-up clinico/dermatologico periodico e autoesame cutaneo."
 

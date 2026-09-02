@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /**
- * classe che gestisce lo stato dell'interfaccia utente
+ * Classe che gestisce lo stato dell'interfaccia utente
  * @property _uiState rappresenta lo stato dell'interfaccia utente modificabile
  * @property uiState rappresenta lo stato dell'interfaccia utente di sola lettura
  */
@@ -65,22 +65,27 @@ class MelanomaViewModel: ViewModel() {
     }
 
     /**
-     * Calcola lo stadio del melanoma secondo classificazioneTNM
+     * Calcola lo stadio del melanoma secondo classificazioneTNM e le raccomandazioni mediche indicate (ispirandosi a NCCN ed ESMO)
      */
     fun calcolaStadioFinale() {
+        val calcolatore = CalcolatoreTNM()
         //Prendo i dati attuali dal UiState
         val datiPaziente = _uiState.value.melanomaAnalizzato
 
         //Chiamo il Model passandogli i dati
-        val risultatoCalcolato = CalcolatoreTNM().calcolaTNM(
+        val risultatoCalcolato = calcolatore.calcolaTNM(
             breslow = datiPaziente.spessoreBreslow,
             ulcerazione = datiPaziente.ulcerazione,
             numLinfonodi = datiPaziente.numeroLinfonodi,
             metastasi = datiPaziente.metastasi
         )
 
+        val raccomandazioniOttenute = calcolatore.ottieniRaccomandazione(risultatoCalcolato)
+
+
         //Preparo il risultato per la View
-        _uiState.value = _uiState.value.copy(risultatoTNM = risultatoCalcolato)
+        _uiState.value = _uiState.value.copy(risultatoTNM = risultatoCalcolato,
+            raccomandazioni = raccomandazioniOttenute)
     }
 
 }

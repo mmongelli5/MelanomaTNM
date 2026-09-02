@@ -34,10 +34,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MedicalInformation
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MelanomaAppScreen(viewModel: MelanomaViewModel, innerPadding: PaddingValues) {
     //Ascolto del viewmodel/logica di stato
@@ -70,6 +78,11 @@ fun MelanomaAppScreen(viewModel: MelanomaViewModel, innerPadding: PaddingValues)
     val moduloValido = testoBreslow.isNotEmpty() && !isErrorBreslow &&
             testoLinfonodi.isNotEmpty() && !isErrorLinfonodi
 
+    //STATO PER PANNELLO DETTAGLI
+    // (per controllare se il pannello in è aperto o chiuso)
+    var showSheet by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState()
+
     //layout UI
     Column(
         modifier = Modifier
@@ -91,7 +104,9 @@ fun MelanomaAppScreen(viewModel: MelanomaViewModel, innerPadding: PaddingValues)
             androidx.compose.material3.Icon(
                 imageVector = Icons.Default.MedicalInformation,
                 contentDescription = null,
-                modifier = Modifier.size(40.dp).padding(end = 8.dp), // Spazio tra icona e testo
+                modifier = Modifier
+                    .size(40.dp)
+                    .padding(end = 8.dp), // Spazio tra icona e testo
                 tint = MaterialTheme.colorScheme.primary // Colore dell'icona
             )
 
@@ -248,7 +263,10 @@ fun MelanomaAppScreen(viewModel: MelanomaViewModel, innerPadding: PaddingValues)
             opzioniMetastasi.forEachIndexed { index, label ->
                 SegmentedButton(
                     //arrotonda automaticamente i bordi del bottone per ogni opzione
-                    shape = SegmentedButtonDefaults.itemShape(index = index, count = opzioniMetastasi.size),
+                    shape = SegmentedButtonDefaults.itemShape(
+                        index = index,
+                        count = opzioniMetastasi.size
+                    ),
                     onClick = {
                         // Aggiorna il viewmodel: index 1 è true (Presente), 0 è false (Assente)
                         viewModel.aggiornaMetastasi(index == 1)
@@ -272,8 +290,10 @@ fun MelanomaAppScreen(viewModel: MelanomaViewModel, innerPadding: PaddingValues)
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // AREA RISULTATO
+        // AREA RISULTATO E PANNELLO DETTAGLI
         if (stato.risultatoTNM.isNotEmpty()) {
+
+            //per l'area risultato
             androidx.compose.material3.Card(
                 colors = androidx.compose.material3.CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer
@@ -284,7 +304,10 @@ fun MelanomaAppScreen(viewModel: MelanomaViewModel, innerPadding: PaddingValues)
                     modifier = Modifier.padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(text = "Risultato Classificazione:", style = MaterialTheme.typography.labelLarge)
+                    Text(
+                        text = "Risultato Classificazione:",
+                        style = MaterialTheme.typography.labelLarge
+                    )
                     Text(
                         text = stato.risultatoTNM,
                         style = MaterialTheme.typography.headlineLarge,
@@ -292,7 +315,42 @@ fun MelanomaAppScreen(viewModel: MelanomaViewModel, innerPadding: PaddingValues)
                     )
                 }
             }
+
+            //per il pannello dettagli
+            Spacer(modifier = Modifier.height(16.dp))
+
+            TextButton(
+                onClick = { showSheet = true },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Default.Info, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text("Visualizza raccomandazioni cliniche")
+            }
         }
 
+    }
+
+    //Pannello dettagli in sovrapposizione (fuori dalla column)
+    if (showSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showSheet = false },
+            sheetState = sheetState,
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 32.dp, start = 24.dp, end = 24.dp, top = 8.dp)
+            ) {
+                Text(
+                    text = "Raccomandazioni per ${stato.risultatoTNM}",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(Modifier.height(16.dp))
+                Text(text = stato.raccomandazioni, style = MaterialTheme.typography.bodyLarge)
+            }
+        }
     }
 }
